@@ -1,7 +1,8 @@
 import numpy as np
 from pydub import AudioSegment
 from pydub.generators import Sine
-from PIL import Image
+from moviepy.editor import ImageSequenceClip, AudioFileClip, concatenate_videoclips
+from PIL import Image, ImageDraw
 
 # Function to map grayscale values to pitch
 def grayscale_to_pitch(value):
@@ -32,17 +33,17 @@ def generate_instrument_sound(pitch, duration_ms, instrument='piano'):
     return audio
 
 
-# Function to generate sound by averaging RGB values of columns
-def generate_sound_from_image(image_path, duration_ms, instrument='piano'):
+def generate_sound_from_image(image_path, duration_ms, column_interval=5, instrument='piano'):
     image = Image.open(image_path)
     width, height = image.size
 
-    # Calculate the duration for each note
-    note_duration = int(duration_ms / width)
+    # Calculate the duration for each note and the skip value for columns
+    note_duration = int(duration_ms / (width // column_interval))
+    column_skip = column_interval
 
     sound = 0  # Initial silent audio
 
-    for x in range(width):
+    for x in range(0, width, column_skip):
         total_r, total_g, total_b = 0, 0, 0
 
         for y in range(height):
@@ -77,9 +78,56 @@ def generate_sound_from_image(image_path, duration_ms, instrument='piano'):
 image_path = "./Generating/testing.jpg"  # Change this to your image file path
 
 # Generate the sound based on the image
-duration_ms = 20000  # Total duration for the sound in milliseconds
+duration_ms = 10000  # Total duration for the sound in milliseconds
 generated_sound = generate_sound_from_image(image_path, duration_ms)
 
 # Export the generated sound to a file (e.g., a WAV file)
 output_file = "generated_sound_column_average.wav"
 generated_sound.export(output_file, format="wav")
+
+
+
+def generate_animation_frames(image_path, column_interval=5, instrument='piano'):
+    image = Image.open(image_path)
+    width, height = image.size
+
+    # Set up the output frames
+    frames = []
+
+    for x in range(0, width, column_interval):
+        # Generate an image frame for the current column
+        frame = image.copy()
+        draw = ImageDraw.Draw(frame)
+        draw.line((x, 0, x, height), fill=(255, 0, 0), width=2)  # Highlight the current column
+        frames.append(np.array(frame))
+
+    return frames
+
+# Path to your image file
+image_path = "./Generating/testing.jpg"  # Change this to your image file path
+
+# Generate the animation frames
+frames = generate_animation_frames(image_path, column_interval=5)
+
+# Path to your generated sound file
+sound_path = "generated_sound_column_average.wav"
+
+# Load the audio file
+audio = AudioSegment.from_wav(sound_path)
+
+# Set the frame rate (frames per second)
+audio_duration = len(generated_sound)
+fps = len(frames) / (audio_duration / 1000)
+
+# Create a video clip from the frames
+clip = ImageSequenceClip(frames, fps=fps)
+
+# Set the audio for the video
+clip = clip.set_audio(AudioFileClip(sound_path))
+
+output_video_path = "combined_video_with_audio2.mp4"
+clip.write_videofile(output_video_path, 
+                     codec='h264',
+                     remove_temp=True,
+                     threads=4,
+                     )
