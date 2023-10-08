@@ -54,8 +54,8 @@ def generate_sound_from_image(image_path, duration_ms, column_interval=4, instru
         total_r, total_g, total_b = 0, 0, 0
 
         for y in range(height):
-            if image.mode == 'RGB':
-                r, g, b = image.getpixel((x, y))
+            if image.mode == 'RGB' or "RGBA":
+                r, g, b, a = image.getpixel((x, y))
             elif image.mode == 'L':
                 # Grayscale image, use grayscale value for all channels
                 grayscale_value = image.getpixel((x, y))
@@ -69,7 +69,7 @@ def generate_sound_from_image(image_path, duration_ms, column_interval=4, instru
         avg_g = total_g // height
         avg_b = total_b // height
 
-        if image.mode == 'RGB':
+        if image.mode == 'RGB' or "RGBA":
             pitch_value = rgb_to_pitch(avg_r, avg_g, avg_b)
         elif image.mode == 'L':
             pitch_value = grayscale_to_pitch(avg_r)
@@ -82,7 +82,7 @@ def generate_sound_from_image(image_path, duration_ms, column_interval=4, instru
 
 
 # Path to your image file
-image_path = "./Generating/Z.png"  # Change this to your image file path
+image_path = "Webb1.png"  # Change this to your image file path
 
 # Generate the sound based on the image
 duration_ms = 15000  # Total duration for the sound in milliseconds
@@ -111,7 +111,7 @@ def generate_animation_frames(image_path, column_interval=3, instrument='piano')
     return frames
 
 # Path to your image file
-image_path = "./Generating/Z.png"  # Change this to your image file path
+image_path = "Webb1.png"  # Change this to your image file path
 
 # Generate the animation frames
 frames = generate_animation_frames(image_path, column_interval=3)
