@@ -1,8 +1,9 @@
 import numpy as np
 from pydub import AudioSegment
 from pydub.generators import Sine
-from moviepy.editor import ImageSequenceClip, AudioFileClip, concatenate_videoclips
+from moviepy.editor import ImageSequenceClip, AudioFileClip
 from PIL import Image, ImageDraw
+
 
 # Function to map grayscale values to pitch
 def grayscale_to_pitch(value):
@@ -26,19 +27,25 @@ def generate_instrument_sound(pitch, duration_ms, instrument='piano'):
     # Map pitch to a musical note
     frequency = pitch_to_note(pitch)
 
-    # Generate a piano-like sound (sine wave with a piano-like decay)
-    audio = Sine(frequency).to_audio_segment(duration=duration_ms)
-    if audio:
-        audio = audio.fade_out(int(duration_ms * 0.98))  # Apply a fade-out effect
+    # Create a complex waveform using a combination of sine waves
+    audio = (
+        Sine(frequency).to_audio_segment(duration=duration_ms) +
+        Sine(2 * frequency).to_audio_segment(duration=duration_ms) +
+        Sine(3 * frequency).to_audio_segment(duration=duration_ms)
+    )
+
+    # Apply a fade-out effect
+    audio = audio.fade_out(int(duration_ms * 0.9))
+
     return audio
 
 
-def generate_sound_from_image(image_path, duration_ms, column_interval=5, instrument='piano'):
+def generate_sound_from_image(image_path, duration_ms, column_interval=4, instrument='piano'):
     image = Image.open(image_path)
     width, height = image.size
 
     # Calculate the duration for each note and the skip value for columns
-    note_duration = int(duration_ms / (width // column_interval))
+    note_duration = int(duration_ms / (width // column_interval)/column_interval)
     column_skip = column_interval
 
     sound = 0  # Initial silent audio
@@ -75,10 +82,10 @@ def generate_sound_from_image(image_path, duration_ms, column_interval=5, instru
 
 
 # Path to your image file
-image_path = "./Generating/testing.jpg"  # Change this to your image file path
+image_path = "./Generating/Z.png"  # Change this to your image file path
 
 # Generate the sound based on the image
-duration_ms = 10000  # Total duration for the sound in milliseconds
+duration_ms = 15000  # Total duration for the sound in milliseconds
 generated_sound = generate_sound_from_image(image_path, duration_ms)
 
 # Export the generated sound to a file (e.g., a WAV file)
@@ -87,7 +94,7 @@ generated_sound.export(output_file, format="wav")
 
 
 
-def generate_animation_frames(image_path, column_interval=5, instrument='piano'):
+def generate_animation_frames(image_path, column_interval=3, instrument='piano'):
     image = Image.open(image_path)
     width, height = image.size
 
@@ -104,10 +111,10 @@ def generate_animation_frames(image_path, column_interval=5, instrument='piano')
     return frames
 
 # Path to your image file
-image_path = "./Generating/testing.jpg"  # Change this to your image file path
+image_path = "./Generating/Z.png"  # Change this to your image file path
 
 # Generate the animation frames
-frames = generate_animation_frames(image_path, column_interval=5)
+frames = generate_animation_frames(image_path, column_interval=3)
 
 # Path to your generated sound file
 sound_path = "generated_sound_column_average.wav"
