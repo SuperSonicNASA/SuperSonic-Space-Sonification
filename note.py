@@ -4,6 +4,7 @@ from pydub.generators import Sine
 from moviepy.editor import ImageSequenceClip, AudioFileClip
 from PIL import Image, ImageDraw
 
+image_link = "./Generating/Data_set/Webb6.png"
 
 # Function to map grayscale values to pitch
 def grayscale_to_pitch(value):
@@ -12,7 +13,7 @@ def grayscale_to_pitch(value):
 
 # Function to map RGB values to pitch
 def rgb_to_pitch(red, green, blue):
-    pitch_value = (red + green + blue) / 10
+    pitch_value = (red + green + blue)/10
     return pitch_value
 
 # Function to generate a musical note based on pitch value
@@ -40,12 +41,12 @@ def generate_instrument_sound(pitch, duration_ms, instrument='piano'):
     return audio
 
 
-def generate_sound_from_image(image_path, duration_ms, column_interval=4, instrument='piano'):
+def generate_sound_from_image(image_path, duration_ms, column_interval=3, instrument='piano'):
     image = Image.open(image_path)
     width, height = image.size
 
     # Calculate the duration for each note and the skip value for columns
-    note_duration = int(duration_ms / (width // column_interval)/column_interval)
+    note_duration = int(duration_ms / (width // column_interval) / 2)
     column_skip = column_interval
 
     sound = 0  # Initial silent audio
@@ -55,11 +56,11 @@ def generate_sound_from_image(image_path, duration_ms, column_interval=4, instru
 
         for y in range(height):
             if image.mode == 'RGB' or "RGBA":
-                r, g, b, a = image.getpixel((x, y))
+                r, g, b, a= image.getpixel((x, y))
             elif image.mode == 'L':
                 # Grayscale image, use grayscale value for all channels
                 grayscale_value = image.getpixel((x, y))
-                r, g, b = grayscale_value, grayscale_value, grayscale_value
+                r = g = b = grayscale_value
 
             total_r += r
             total_g += g
@@ -74,15 +75,15 @@ def generate_sound_from_image(image_path, duration_ms, column_interval=4, instru
         elif image.mode == 'L':
             pitch_value = grayscale_to_pitch(avg_r)
 
+        # Move the pitch_value assignment outside the if-elif block to ensure it's always assigned
         note_audio = generate_instrument_sound(pitch_value, note_duration, instrument)
         sound = sound + note_audio
 
     return sound
 
 
-
 # Path to your image file
-image_path = "Webb1.png"  # Change this to your image file path
+image_path = image_link  # Change this to your image file path
 
 # Generate the sound based on the image
 duration_ms = 15000  # Total duration for the sound in milliseconds
@@ -111,7 +112,7 @@ def generate_animation_frames(image_path, column_interval=3, instrument='piano')
     return frames
 
 # Path to your image file
-image_path = "Webb1.png"  # Change this to your image file path
+image_path = image_link  # Change this to your image file path
 
 # Generate the animation frames
 frames = generate_animation_frames(image_path, column_interval=3)
@@ -132,7 +133,7 @@ clip = ImageSequenceClip(frames, fps=fps)
 # Set the audio for the video
 clip = clip.set_audio(AudioFileClip(sound_path))
 
-output_video_path = "combined_video_with_audio2.mp4"
+output_video_path = "Webb6.mp4"
 clip.write_videofile(output_video_path, 
                      codec='h264',
                      remove_temp=True,
