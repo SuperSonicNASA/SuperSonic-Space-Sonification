@@ -99,8 +99,8 @@ while pointer < width:
         return sound
 
 
-    # Path to your image file
-    image_path = image_link  # Change this to your image file path
+    # Path to image file
+    image_path = image_link 
 
     # Generate the sound based on the image
     duration_ms = 15000  # Total duration for the sound in milliseconds
@@ -127,29 +127,23 @@ while pointer < width:
 
         return frames
 
-    # Path to your image file
-    image_path = image_link  # Change this to your image file path
+    # Path to image file
+    image_path = image_link 
 
-    # Generate the animation frames
     frames = generate_animation_frames(image_path, column_interval=3)
 
-    # Path to your generated sound file
     sound_path = "generated_sound_column_average.wav"
 
-    # Load the audio file
     audio = AudioSegment.from_wav(sound_path)
 
-    # Set the frame rate (frames per second)
     audio_duration = len(generated_sound)
     fps = len(frames) / (audio_duration / 1000)
 
-    # Create a video clip from the frames
     clip = ImageSequenceClip(frames, fps=fps)
 
-    # Set the audio for the video
     clip = clip.set_audio(AudioFileClip(sound_path))
 
-    output_video_path = "Webb"+str(pointer)+".mp4"
+    output_video_path = "Webb"+pointer+".mp4"
     clip.write_videofile(output_video_path, 
                         codec='h264',
                         remove_temp=True,
