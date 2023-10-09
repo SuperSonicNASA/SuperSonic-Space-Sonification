@@ -4,7 +4,7 @@ from pydub.generators import Sine
 from moviepy.editor import ImageSequenceClip, AudioFileClip
 from PIL import Image, ImageDraw
 
-image_link = "./Generating/Data_set/Webb6.png"
+image_link = "./test.png"
 
 # Function to map grayscale values to pitch
 def grayscale_to_pitch(value):
@@ -56,7 +56,7 @@ def generate_sound_from_image(image_path, duration_ms, column_interval=3, instru
 
         for y in range(height):
             if image.mode == 'RGB' or "RGBA":
-                r, g, b, a= image.getpixel((x, y))
+                r, g, b= image.getpixel((x, y))
             elif image.mode == 'L':
                 # Grayscale image, use grayscale value for all channels
                 grayscale_value = image.getpixel((x, y))
