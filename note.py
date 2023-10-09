@@ -4,14 +4,26 @@ from pydub.generators import Sine
 from moviepy.editor import ImageSequenceClip, AudioFileClip
 from PIL import Image, ImageDraw
 
-pointer = 1
+pointer = 0
 
-image = Image.open("./output_video_images/image_0000.png")
+image = Image.open("output_video_images/image_0000.png")
 width, height = image.size
 
 while pointer < width:
-        
-    image_link = "./test.png"
+    
+    def turnToStr(pointer):
+        if pointer // 10 == 0:
+            return "000" + str(pointer)
+        elif pointer // 100 == 0:
+            return "00" + str(pointer)
+        elif pointer // 1000 == 0:
+            return "0" + str(pointer)
+        else:
+            return str(pointer)
+    
+    sub = turnToStr(pointer)
+
+    image_link = "./output_video_images/image_" + sub + ".png"
 
     # Function to map grayscale values to pitch
     def grayscale_to_pitch(value):
@@ -54,37 +66,35 @@ while pointer < width:
 
         # Calculate the duration for each note and the skip value for columns
         note_duration = int(duration_ms / (width // column_interval) / 2)
-        column_skip = column_interval
 
         sound = 0  # Initial silent audio
 
-        for x in range(0, width, column_skip):
-            total_r, total_g, total_b = 0, 0, 0
+        total_r, total_g, total_b = 0, 0, 0
 
-            for y in range(height):
-                if image.mode == 'RGB' or "RGBA":
-                    r, g, b= image.getpixel((x, y))
-                elif image.mode == 'L':
-                    # Grayscale image, use grayscale value for all channels
-                    grayscale_value = image.getpixel((x, y))
-                    r = g = b = grayscale_value
-
-                total_r += r
-                total_g += g
-                total_b += b
-
-            avg_r = total_r // height
-            avg_g = total_g // height
-            avg_b = total_b // height
-
+        for y in range(height):
             if image.mode == 'RGB' or "RGBA":
-                pitch_value = rgb_to_pitch(avg_r, avg_g, avg_b)
+                r, g, b= image.getpixel((pointer, y))
             elif image.mode == 'L':
-                pitch_value = grayscale_to_pitch(avg_r)
+                # Grayscale image, use grayscale value for all channels
+                grayscale_value = image.getpixel((pointer, y))
+                r = g = b = grayscale_value
 
-            # Move the pitch_value assignment outside the if-elif block to ensure it's always assigned
-            note_audio = generate_instrument_sound(pitch_value, note_duration, instrument)
-            sound = sound + note_audio
+            total_r += r
+            total_g += g
+            total_b += b
+
+        avg_r = total_r // height
+        avg_g = total_g // height
+        avg_b = total_b // height
+
+        if image.mode == 'RGB' or "RGBA":
+            pitch_value = rgb_to_pitch(avg_r, avg_g, avg_b)
+        elif image.mode == 'L':
+            pitch_value = grayscale_to_pitch(avg_r)
+
+        # Move the pitch_value assignment outside the if-elif block to ensure it's always assigned
+        note_audio = generate_instrument_sound(pitch_value, note_duration, instrument)
+        sound = sound + note_audio
 
         return sound
 
@@ -102,19 +112,18 @@ while pointer < width:
 
 
 
-    def generate_animation_frames(image_path, column_interval=3, instrument='piano'):
+    def generate_animation_frames(image_path, column_interval=5, instrument='piano'):
         image = Image.open(image_path)
         width, height = image.size
 
         # Set up the output frames
         frames = []
 
-        for x in range(0, width, column_interval):
-            # Generate an image frame for the current column
-            frame = image.copy()
-            draw = ImageDraw.Draw(frame)
-            draw.line((x, 0, x, height), fill=(255, 0, 0), width=2)  # Highlight the current column
-            frames.append(np.array(frame))
+        # Generate an image frame for the current column
+        frame = image.copy()
+        draw = ImageDraw.Draw(frame)
+        draw.line((pointer, 0, pointer, height), fill=(255, 0, 0), width=2)  # Highlight the current column
+        frames.append(np.array(frame))
 
         return frames
 
@@ -146,3 +155,5 @@ while pointer < width:
                         remove_temp=True,
                         threads=4,
                         )
+    
+    pointer += 5
